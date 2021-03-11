@@ -11,7 +11,7 @@ import (
 
 
 type Neuron struct {
-  tmin, thresholdMax, threshold int
+  thresholdMin, thresholdMax, threshold int
   potential             int
   recovery, recoveryMax int
   inbox                 int
@@ -47,9 +47,11 @@ func NewSynapse(n *Neuron, delay, signal int) *Synapse{
   }
 }
 
-func NewNeuron(thresholdMax, recoveryMax int) *Neuron{
-  return &Neuron{
-    threshold:    1,
+func NewNeuron(thresholdMax, recoveryMax, thresholdMin int) *Neuron{
+    
+  return &Neuron{    
+    threshold:    thresholdMin,
+    thresholdMin: thresholdMin,
     recoveryMax:  recoveryMax,
     thresholdMax: thresholdMax,
   }
@@ -84,7 +86,7 @@ func (n *Neuron) process() {
     n.fired = false
   }
 
-  if n.threshold > n.tmin{
+  if n.threshold > n.thresholdMin {
     if n.recovery >= n.recoveryMax {
       n.threshold -=1
     } else {
@@ -107,8 +109,9 @@ func min(a, b int) int{
 
 func main(){
 
-  const NEURONS = 500
-  const TIME = 5000
+  const NEURONS = 4000
+  const TIME = 8000
+  const CLUSTER = NEURONS/10
 
 
   var neurons []*Neuron
@@ -117,22 +120,47 @@ func main(){
   var field [][]int
 
   for i := 0; i < NEURONS; i++ {
-    neurons = append(neurons, NewNeuron(20, 16))
+    cluster := i / CLUSTER
+    
+    tmin := cluster/3
+    tmax := 5+cluster*10
+    rec := 4+cluster * 10
+    
+    neurons = append(neurons, NewNeuron(tmax, rec, tmin))
   }
 
-  for _, n := range neurons{
-    count := rand.Intn(11)+1
-    for i := 0; i < count; i++ {
-      target := neurons[rand.Intn(len(neurons))]
-      cleft := NewSynapse(target, rand.Intn(7)+1, rand.Intn(5)-2)
+  for j, n := range neurons{
+    // local connectivity
+    cluster := j / CLUSTER
+    
+    
+    for i := 0; i < CLUSTER/10; i++ {
+
+      lid := rand.Intn(CLUSTER) + cluster * CLUSTER
+      if lid != j { 
+        target := neurons[lid]
+        cleft := NewSynapse(target, rand.Intn(3+cluster/2)+1, rand.Intn(4)-1)
+        n.targets = append(n.targets, cleft)
+        clefts = append(clefts, cleft)
+      }
+    }
+    // inter-cluster
+    // higher thoughts have bigger connectivity
+    connections := cluster * 2 + 5
+    for i := 0; i < connections; i++ {
+      target := neurons[rand.Intn(NEURONS)]
+      cleft := NewSynapse(target, rand.Intn(7)+cluster+1, rand.Intn(4)-2)
       n.targets = append(n.targets, cleft)
       clefts = append(clefts, cleft)
     }
+    
   }
 
   for i := 0; i < 10; i++ {
     neurons[i].enqueue(1)
   }
+  
+  pmax := 30
 
   for t := 0; t < TIME; t++ {
 
@@ -140,8 +168,11 @@ func main(){
     field = append(field, current)
     for i, n := range neurons {
       n.process()
+      if n.potential > pmax{
+        pmax = n.potential
+      }
       if n.fired{
-        current[i]=10
+        current[i]=pmax+5
       } else {
         current[i]=n.potential
       }
@@ -159,18 +190,18 @@ func main(){
   defer f.Close()
 
   var sb strings.Builder
-  for epoch, pots := range field {
+  for _, pots := range field {
 
     sb.Reset()
-    sb.WriteString(strconv.Itoa(epoch))
-    sb.WriteByte('\t')
-    for _, pot := range pots {
+    for r, pot := range pots {
+        if r != 0 {
+      sb.WriteByte('\t')      
+        }
       sb.WriteString(strconv.Itoa(pot))
-      sb.WriteByte('\t')
-    }
+          }
     sb.WriteByte('\n')
     f.WriteString(sb.String())
   }
 
-  log.Println("Done")
+  log.Println("Done", pmax)
 }
