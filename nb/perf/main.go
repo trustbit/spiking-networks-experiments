@@ -89,6 +89,7 @@ func (n *Neuron) process() {
   if n.threshold > n.thresholdMin {
     if n.recovery >= n.recoveryMax {
       n.threshold -=1
+      n.recovery = 0
     } else {
       n.recovery +=1
     }
@@ -109,9 +110,9 @@ func min(a, b int) int{
 
 func main(){
 
-  const NEURONS = 4000
-  const TIME = 8000
-  const CLUSTER = NEURONS/10
+  const NEURONS = 5000
+  const TIME = 20000
+  const CLUSTER = NEURONS/8
 
 
   var neurons []*Neuron
@@ -123,7 +124,7 @@ func main(){
     cluster := i / CLUSTER
     
     tmin := cluster/3
-    tmax := 5+cluster*10
+    tmax := 5+cluster*50
     rec := 4+cluster * 10
     
     neurons = append(neurons, NewNeuron(tmax, rec, tmin))
@@ -134,7 +135,7 @@ func main(){
     cluster := j / CLUSTER
     
     
-    for i := 0; i < CLUSTER/10; i++ {
+    for i := 0; i < CLUSTER/20; i++ {
 
       lid := rand.Intn(CLUSTER) + cluster * CLUSTER
       if lid != j { 
@@ -144,16 +145,28 @@ func main(){
         clefts = append(clefts, cleft)
       }
     }
+    
+      
+    
     // inter-cluster
     // higher thoughts have bigger connectivity
-    connections := cluster * 2 + 5
+    connections := cluster * 3
     for i := 0; i < connections; i++ {
       target := neurons[rand.Intn(NEURONS)]
-      cleft := NewSynapse(target, rand.Intn(7)+cluster+1, rand.Intn(4)-2)
+      cleft := NewSynapse(target, rand.Intn(7)+cluster+1, rand.Intn(4)-1)
       n.targets = append(n.targets, cleft)
       clefts = append(clefts, cleft)
     }
     
+    // forward connectivity
+    for i:= 0; i < CLUSTER/25; i++ {
+      mx := NEURONS-j
+      lid := rand.Intn(mx+1) + j
+        target := neurons[lid % NEURONS]
+        cleft := NewSynapse(target, rand.Intn(3+cluster/2)+1, rand.Intn(4)-1)
+        n.targets = append(n.targets, cleft)
+        clefts = append(clefts, cleft)
+    }
   }
 
   for i := 0; i < 10; i++ {
