@@ -2,6 +2,14 @@ This repository contains experiments in digital spiking neural networks.
 
 The work is inspired by the [Simple Model of Spiking Neurons](https://www.izhikevich.org/publications/spikes.htm) by Eugene M. Izhikevich. However, we are attempting to build something that has a greater hardware-affinity while retaining the important properties of the spiking networks.
 
+# Goals
+
+First, we want to build a spiking neural network that can play this game:
+
+![](images/2021-01-26_21-31-41_screencast.mp4)
+
+Then, we want to make a network that can adapt (without expensive recomputation) even if the rules of the game change slightly.
+
 
 ## V1-V5
 
