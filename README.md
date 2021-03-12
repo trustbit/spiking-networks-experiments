@@ -4,7 +4,9 @@ The work is inspired by the [Simple Model of Spiking Neurons](https://www.izhike
 
 # Goals
 
-First, we want to build a spiking neural network that can play [this simple game](images/2021-01-26_21-31-41_screencast.mp4) (mp4 video, 2MB).
+First, we want to build a spiking neural network that can play a simple game of tracking the dot with an eye:
+
+![this simple game](images/2021-01-26_21-31-41_screencast.gif)
 
 Then, we want to make a network that can adapt (without expensive recomputation) even if the rules of the game change slightly.
 
