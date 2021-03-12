@@ -6,7 +6,7 @@ The work is inspired by the [Simple Model of Spiking Neurons](https://www.izhike
 
 First, we want to build a spiking neural network that can play this game:
 
-![](images/2021-01-26_21-31-41_screencast.mp4)
+![](images/2021-01-26_21-31-41_screencast.gif)
 
 Then, we want to make a network that can adapt (without expensive recomputation) even if the rules of the game change slightly.
 
