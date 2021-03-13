@@ -6,6 +6,7 @@ import (
   "os"
   "strconv"
   "strings"
+    "fmt"
 )
 
 
@@ -110,8 +111,8 @@ func min(a, b int) int{
 
 func main(){
 
-  const NEURONS = 5000
-  const TIME = 20000
+  const NEURONS = 4000
+  const TIME = 10000
   const CLUSTER = NEURONS/8
 
 
@@ -123,9 +124,10 @@ func main(){
   for i := 0; i < NEURONS; i++ {
     cluster := i / CLUSTER
     
-    tmin := cluster/3
-    tmax := 5+cluster*50
-    rec := 4+cluster * 10
+    tmin := cluster/2
+    tmax := 1+tmin + cluster * 20
+    rec := 2+cluster * 20
+      
     
     neurons = append(neurons, NewNeuron(tmax, rec, tmin))
   }
@@ -135,12 +137,12 @@ func main(){
     cluster := j / CLUSTER
     
     
-    for i := 0; i < CLUSTER/20; i++ {
+    for i := 0; i < 20; i++ {
 
       lid := rand.Intn(CLUSTER) + cluster * CLUSTER
       if lid != j { 
         target := neurons[lid]
-        cleft := NewSynapse(target, rand.Intn(3+cluster/2)+1, rand.Intn(4)-1)
+        cleft := NewSynapse(target, rand.Intn(3+cluster/2)+1, rand.Intn(5)-2)
         n.targets = append(n.targets, cleft)
         clefts = append(clefts, cleft)
       }
@@ -150,16 +152,16 @@ func main(){
     
     // inter-cluster
     // higher thoughts have bigger connectivity
-    connections := cluster * 3
+    connections := cluster * 2
     for i := 0; i < connections; i++ {
       target := neurons[rand.Intn(NEURONS)]
-      cleft := NewSynapse(target, rand.Intn(7)+cluster+1, rand.Intn(4)-1)
+      cleft := NewSynapse(target, rand.Intn(4)+cluster+1, rand.Intn(4)-1)
       n.targets = append(n.targets, cleft)
       clefts = append(clefts, cleft)
     }
     
     // forward connectivity
-    for i:= 0; i < CLUSTER/25; i++ {
+    for i:= 0; i < 5; i++ {
       mx := NEURONS-j
       lid := rand.Intn(mx+1) + j
         target := neurons[lid % NEURONS]
@@ -168,6 +170,8 @@ func main(){
         clefts = append(clefts, cleft)
     }
   }
+    
+
 
   for i := 0; i < 10; i++ {
     neurons[i].enqueue(1)
@@ -216,5 +220,5 @@ func main(){
     f.WriteString(sb.String())
   }
 
-  log.Println("Done", pmax)
+    fmt.Println(fmt.Sprintf("max: %v, clefts: %d, neurons: %d, ratio: %d", pmax, len(clefts), NEURONS, len(clefts)/NEURONS))
 }
