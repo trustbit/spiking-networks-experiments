@@ -21,29 +21,35 @@ type Neuron struct {
 }
 
 type Synapse struct {
-  queue []byte
-  signal int
+  queue uint
+  signal int8
   target *Neuron
-  pointer int
+  pointer int8
+  size int8
 }
 
 func (s *Synapse) enqueue() {
-  s.queue[s.pointer] = 1
+  s.queue |= 1<<s.pointer
 }
 
 func (s *Synapse) process() {
-  s.pointer = (s.pointer + 1) % len(s.queue)
-  if s.queue[s.pointer]>0 {
+  s.pointer+=1
+  if s.pointer == s.size{
+    s.pointer = 0
+  }
+
+  mask := uint(1<<s.pointer)
+  if s.queue & mask > 0 {
     s.target.enqueue(s.signal)
-    s.queue[s.pointer] = 0
+    s.queue &= ^mask
   }
 }
 
 
-func NewSynapse(n *Neuron, delay, signal int) *Synapse{
+func NewSynapse(n *Neuron, delay int8, signal int8) *Synapse{
   return &Synapse{
     target: n,
-    queue: make([]byte, delay),
+    size:delay,
     signal: signal,
   }
 }
@@ -98,8 +104,8 @@ func (n *Neuron) process() {
 
 }
 
-func (n *Neuron) enqueue(signal int) {
-  n.inbox += signal
+func (n *Neuron) enqueue(signal int8) {
+  n.inbox += int(signal)
 }
 
 func min(a, b int) int{
@@ -142,7 +148,7 @@ func main(){
       lid := rand.Intn(CLUSTER) + cluster * CLUSTER
       if lid != j { 
         target := neurons[lid]
-        cleft := NewSynapse(target, rand.Intn(3+cluster/2)+1, rand.Intn(5)-2)
+        cleft := NewSynapse(target, int8(rand.Intn(3+cluster/2)+1), int8(rand.Intn(5)-2))
         n.targets = append(n.targets, cleft)
         clefts = append(clefts, cleft)
       }
@@ -155,7 +161,7 @@ func main(){
     connections := cluster * 2
     for i := 0; i < connections; i++ {
       target := neurons[rand.Intn(NEURONS)]
-      cleft := NewSynapse(target, rand.Intn(4)+cluster+1, rand.Intn(4)-1)
+      cleft := NewSynapse(target, int8(rand.Intn(4)+cluster+1), int8(rand.Intn(4)-1))
       n.targets = append(n.targets, cleft)
       clefts = append(clefts, cleft)
     }
@@ -165,7 +171,7 @@ func main(){
       mx := NEURONS-j
       lid := rand.Intn(mx+1) + j
         target := neurons[lid % NEURONS]
-        cleft := NewSynapse(target, rand.Intn(3+cluster/2)+1, rand.Intn(4)-1)
+        cleft := NewSynapse(target, int8(rand.Intn(3+cluster/2)+1), int8(rand.Intn(4)-1))
         n.targets = append(n.targets, cleft)
         clefts = append(clefts, cleft)
     }
