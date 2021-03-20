@@ -33,15 +33,20 @@ func (s *Synapse) enqueue() {
 }
 
 func (s *Synapse) process() {
+  // If synapse is empty, then we can skip processing entirely
+  if s.queue == 0{
+    return
+  }
+
   s.pointer+=1
   if s.pointer == s.size{
     s.pointer = 0
   }
 
   mask := uint(1<<s.pointer)
-  if s.queue & mask > 0 {
-    s.target.enqueue(s.signal)
+  if s.queue & mask != 0 {
     s.queue &= ^mask
+    s.target.enqueue(s.signal)
   }
 }
 
