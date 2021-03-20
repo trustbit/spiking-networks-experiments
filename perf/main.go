@@ -125,6 +125,11 @@ func min(a, b int) int{
 var(
   neuronCount = flag.Int("neurons", 4000, "neuron count")
   time = flag.Int("time", 10000, "max ticks")
+
+
+  recMultiplier = flag.Int("rec", 10, "recovery multiplier")
+  tmaxMultiplier = flag.Int("tmax", 10, "tmax multiplier")
+  tminBound = flag.Int("tmin", 3, "tmin upper bound")
 )
 
 func main(){
@@ -149,9 +154,9 @@ func main(){
   for i := 0; i < NEURONS; i++ {
     cluster := i / CLUSTER
       
-    tmin := rand.Intn(3)
-    tmax := tmin + cluster*10
-    rec := 3+cluster*10
+    tmin := rand.Intn(*tminBound)
+    tmax := tmin + cluster* *tmaxMultiplier
+    rec := 3+cluster* *recMultiplier
       
     neurons = append(neurons, NewNeuron(tmax, rec, tmin))
   }
