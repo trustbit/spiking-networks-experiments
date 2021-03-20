@@ -127,14 +127,16 @@ func main(){
 
   var field [][]int
 
+    
+    tmin := rand.Intn(5)
+    tmax := tmin + rand.Intn(20)
+    rec := 5+cluster 
   for i := 0; i < NEURONS; i++ {
     cluster := i / CLUSTER
-    
-    tmin := cluster/2
-    tmax := 1+tmin + cluster * 20
-    rec := 2+cluster * 20
+      
       
     
+      
     neurons = append(neurons, NewNeuron(tmax, rec, tmin))
   }
 
@@ -167,7 +169,7 @@ func main(){
     }
     
     // forward connectivity
-    for i:= 0; i < 5; i++ {
+    for i:= 0; i < 4; i++ {
       mx := NEURONS-j
       lid := rand.Intn(mx+1) + j
         target := neurons[lid % NEURONS]
