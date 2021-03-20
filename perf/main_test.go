@@ -23,12 +23,10 @@ func BenchmarkNewNeuron(b *testing.B) {
 	n2 := NewNeuron(10, 10, 1)
 	// ratio 20
 
-	var clefts []*Synapse
 
-	for i := 0; i < 40; i++ {
+	for i := 0; i < 60; i++ {
 		c := NewSynapse(n2, 3, 1)
 		n1.targets = append(n1.targets, c)
-		clefts = append(clefts, c)
 	}
 
 	for n := 0; n < b.N; n++ {
@@ -37,9 +35,6 @@ func BenchmarkNewNeuron(b *testing.B) {
 		n1.process()
 		n2.process()
 
-		for _, cleft := range clefts {
-			cleft.process()
-		}
 
 	}
 }

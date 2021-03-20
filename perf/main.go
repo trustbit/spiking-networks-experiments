@@ -17,7 +17,7 @@ type Neuron struct {
   recovery, recoveryMax int
   inbox                 int
   fired bool
-  targets []*Synapse
+  targets []Synapse
 }
 
 type Synapse struct {
@@ -28,26 +28,10 @@ type Synapse struct {
   size int8
 }
 
-func (s *Synapse) enqueue() {
-  s.queue |= 1<<s.pointer
-}
-
-func (s *Synapse) process() {
-  s.pointer+=1
-  if s.pointer == s.size{
-    s.pointer = 0
-  }
-
-  mask := uint(1<<s.pointer)
-  if s.queue & mask > 0 {
-    s.target.enqueue(s.signal)
-    s.queue &= ^mask
-  }
-}
 
 
-func NewSynapse(n *Neuron, delay int8, signal int8) *Synapse{
-  return &Synapse{
+func NewSynapse(n *Neuron, delay int8, signal int8) Synapse{
+  return Synapse{
     target: n,
     size:delay,
     signal: signal,
@@ -85,12 +69,26 @@ func (n *Neuron) process() {
     n.recovery = 0
     n.fired = true
 
-    for _, s := range n.targets{
-      s.enqueue()
-    }
 
+    for _, s := range n.targets {
+      s.queue |= 1 << s.pointer
+    }
   } else {
     n.fired = false
+  }
+
+
+  for _, s := range n.targets{
+    s.pointer+=1
+    if s.pointer == s.size{
+      s.pointer = 0
+    }
+
+    mask := uint(1<<s.pointer)
+    if s.queue & mask > 0 {
+      s.target.enqueue(s.signal)
+      s.queue &= ^mask
+    }
   }
 
   if n.threshold > n.thresholdMin {
@@ -101,7 +99,6 @@ func (n *Neuron) process() {
       n.recovery +=1
     }
   }
-
 }
 
 func (n *Neuron) enqueue(signal int8) {
@@ -123,20 +120,20 @@ func main(){
 
 
   var neurons []*Neuron
-  var clefts []*Synapse
+  clefts := 0
 
   var field [][]int
 
     
-    tmin := rand.Intn(5)
-    tmax := tmin + rand.Intn(20)
-    rec := 5+cluster 
   for i := 0; i < NEURONS; i++ {
     cluster := i / CLUSTER
-      
-      
-    
-      
+
+    tmin := rand.Intn(5)
+    tmax := tmin + rand.Intn(20)
+    rec := 5+cluster
+
+
+
     neurons = append(neurons, NewNeuron(tmax, rec, tmin))
   }
 
@@ -152,7 +149,7 @@ func main(){
         target := neurons[lid]
         cleft := NewSynapse(target, int8(rand.Intn(3+cluster/2)+1), int8(rand.Intn(5)-2))
         n.targets = append(n.targets, cleft)
-        clefts = append(clefts, cleft)
+        clefts +=1
       }
     }
     
@@ -165,7 +162,7 @@ func main(){
       target := neurons[rand.Intn(NEURONS)]
       cleft := NewSynapse(target, int8(rand.Intn(4)+cluster+1), int8(rand.Intn(4)-1))
       n.targets = append(n.targets, cleft)
-      clefts = append(clefts, cleft)
+      clefts +=1
     }
     
     // forward connectivity
@@ -175,7 +172,7 @@ func main(){
         target := neurons[lid % NEURONS]
         cleft := NewSynapse(target, int8(rand.Intn(3+cluster/2)+1), int8(rand.Intn(4)-1))
         n.targets = append(n.targets, cleft)
-        clefts = append(clefts, cleft)
+        clefts +=1
     }
   }
     
@@ -202,9 +199,6 @@ func main(){
         current[i]=n.potential
       }
     }
-    for _, c := range clefts {
-      c.process()
-    }
   }
 
 
@@ -228,5 +222,5 @@ func main(){
     f.WriteString(sb.String())
   }
 
-    fmt.Println(fmt.Sprintf("max: %v, clefts: %d, neurons: %d, ratio: %d", pmax, len(clefts), NEURONS, len(clefts)/NEURONS))
+    fmt.Println(fmt.Sprintf("max: %v, clefts: %d, neurons: %d, ratio: %d", pmax, clefts, NEURONS, clefts/NEURONS))
 }
