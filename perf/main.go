@@ -1,6 +1,7 @@
 package main
 
 import (
+  "flag"
   "log"
   "math/rand"
   "os"
@@ -120,11 +121,23 @@ func min(a, b int) int{
   return b
 }
 
+
+var(
+  neuronCount = flag.Int("neurons", 4000, "neuron count")
+  time = flag.Int("time", 10000, "max ticks")
+)
+
 func main(){
 
-  const NEURONS = 4000
-  const TIME = 10000
-  const CLUSTER = NEURONS/8
+  flag.Parse()
+  if !flag.Parsed(){
+    log.Panicln("problem")
+  }
+
+   NEURONS := *neuronCount
+  TIME := *time
+
+  CLUSTER := NEURONS/8
 
 
   var neurons []*Neuron
