@@ -128,14 +128,12 @@ func main(){
   var field [][]int
 
     
-    tmin := rand.Intn(5)
-    tmax := tmin + rand.Intn(20)
-    rec := 5+cluster 
   for i := 0; i < NEURONS; i++ {
     cluster := i / CLUSTER
       
-      
-    
+    tmin := rand.Intn(3)
+    tmax := tmin + cluster*10
+    rec := 3+cluster*10
       
     neurons = append(neurons, NewNeuron(tmax, rec, tmin))
   }
